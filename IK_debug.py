@@ -62,6 +62,12 @@ def test_code(test_case):
     ## Insert IK code here starting at: Define DH parameter symbols
 
     ## YOUR CODE HERE!
+    # theta1 = 0
+    # theta2 = 0
+    # theta3 = 0
+    # theta4 = 0
+    # theta5 = 0
+    # theta6 = 0
       
 
     # Define DH param symbols
@@ -74,7 +80,7 @@ def test_code(test_case):
     roll, pitch, yaw = symbols('roll pitch yaw')
 # Modified DH params
     DH_Table = {alpha0:     0, a0:      0, d1:  0.75,
-             alpha1: -pi/2, a1:   0.35, d2:     0, q2: q2-pi/2,
+             alpha1: -pi/2, a1:   0.35, d2:     0, q2: -pi/2.+q2,
              alpha2:     0, a2:   1.25, d3:     0,
              alpha3: -pi/2, a3: -0.054, d4:  1.50,
              alpha4:  pi/2, a4:      0, d5:     0,
@@ -113,7 +119,7 @@ def test_code(test_case):
     (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(
             [req.poses[x].orientation.x, req.poses[x].orientation.y,
                 req.poses[x].orientation.z, req.poses[x].orientation.w])
- 
+
     r,p,y = symbols('r p y')
 
     ROT_x = Matrix([[1, 0,  0          ],
@@ -144,21 +150,22 @@ def test_code(test_case):
     theta1 =atan2(WC[1],WC[0]) 
 
 
+
     # SSS triangle for theta2 and theta3
     side_a = 1.501
     side_b = sqrt(pow((sqrt(WC[0] * WC[0] + WC[1] * WC[1]) - 0.35), 2) + pow((WC[2] - 0.75),2))
     side_c = 1.25
 
-    angle_a = acos((side_b * side_b + side_c * side_a - side_a * side_a) / (2 * side_b * side_c))
+    angle_a = acos((side_b * side_b + side_c * side_c - side_a * side_a) / (2 * side_b * side_c))
     angle_b = acos((side_a * side_a + side_c * side_c - side_b * side_b) / (2 * side_a * side_c))
-    angle_a = acos((side_a * side_a + side_b * side_b - side_c * side_c) / (2 * side_a * side_b))
+    angle_c = acos((side_a * side_a + side_b * side_b - side_c * side_c) / (2 * side_a * side_b))
 
 
-    theta2 = pi / 2 - angle_a - atan2(WC[2] - 0.75, sqrt(WC[0] * WC[0] + WC[1] * WC[1]) - 0.35)
+    theta2 = pi / 2 - angle_a - atan2(WC[2] - 0.75, sqrt(WC[0] * WC[0] + WC[1] * WC[1]) - 0.35) 
     theta3 = pi / 2 - (angle_b + 0.036) # 0.036 accounts for sage in link4 for -0.054m
 
     R0_3 = T0_1[0:3,0:3] * T1_2[0:3,0:3] * T2_3[0:3,0:3]
-    R0_3 = R0_3.evalf(subs={q1: theta1, q2: theta1, q3: theta3})
+    R0_3 = R0_3.evalf(subs={q1: theta1, q2: theta2, q3: theta3})
 
     R3_6 = R0_3.inv("LU") * ROT_EE
 
