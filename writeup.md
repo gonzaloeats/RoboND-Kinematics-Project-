@@ -93,26 +93,70 @@ First we use `req.poses[]` to get float values for the end effector x,y,and z po
     pz = req.poses[x].position.z
 ```
 
-Given the the postion we are able to feed thos values back into our transfromatoin matrix to obtain our wrist center.
+Given the position we are able to feed those values back into our transformation matrix to obtain our wrist center.
 ```python
     EE = Matrix([[px],
                 [py],
                 [pz]])
     WC = EE - (0.303) * ROT_EE[:,2]
 ```
-And here's another image! 
 
-![alt text][image2]
+Using the WC we can calculate the first three thetas:
+```python
+ #Calculate joint angles using Geometric IK method
+    # More information can be found inthe Iverse Kinematics with Kuka KR210
+    theta1 =atan2(WC[1],WC[0]) 
+
+
+
+    # SSS triangle for theta2 and theta3
+    side_a = 1.501
+    side_b = sqrt(pow((sqrt(WC[0] * WC[0] + WC[1] * WC[1]) - 0.35), 2) + pow((WC[2] - 0.75),2))
+    side_c = 1.25
+
+    angle_a = acos((side_b * side_b + side_c * side_c - side_a * side_a) / (2 * side_b * side_c))
+    angle_b = acos((side_a * side_a + side_c * side_c - side_b * side_b) / (2 * side_a * side_c))
+    angle_c = acos((side_a * side_a + side_b * side_b - side_c * side_c) / (2 * side_a * side_b))
+
+
+    theta2 = pi / 2 - angle_a - atan2(WC[2] - 0.75, sqrt(WC[0] * WC[0] + WC[1] * WC[1]) - 0.35) 
+    theta3 = pi / 2 - (angle_b + 0.036) # 0.036 accounts for sage in link4 for -0.054m
+```
+
+Using the rotation matrix we can calculate the remaining Thetas:
+
+```python
+  R0_3 = T0_1[0:3,0:3] * T1_2[0:3,0:3] * T2_3[0:3,0:3]
+    R0_3 = R0_3.evalf(subs={q1: theta1, q2: theta2, q3: theta3})
+
+    R3_6 = R0_3.inv("LU") * ROT_EE
+
+    theta4 = atan2(R3_6[2,2], -R3_6[0,2]) 
+    theta5 = atan2(sqrt(R3_6[0,2]*R3_6[0,2] + R3_6[2,2]*R3_6[2,2]),R3_6[1,2]) 
+    theta6 = atan2(-R3_6[1,1], R3_6[1,0])
+```
+
 
 ### Project Implementation
 
 #### 1. Fill in the `IK_server.py` file with properly commented python code for calculating Inverse Kinematics based on previously performed Kinematic Analysis. Your code must guide the robot to successfully complete 8/10 pick and place cycles. Briefly discuss the code you implemented and your results. 
 
 
-Here I'll talk about the code, what techniques I used, what worked and why, where the implementation might fail and how I might improve it if I were going to pursue this project further.  
+This project was a great way to familiarize myself with the ROS environment and the symbolic math library (sympy):
+
++ Learning the structure of the urdf files started to make sense once I successfully changed the color of my rods. (made my rods green)
++ Managing my .bashrc was a critical learning objective. Especially when I was testing different versions of my code in different directories. (found my self asking where did the shelf and bucket go?!)
++ I found running 16GB of RAM with a dedicated graphics made it much easier to determine if it was my code or my machine that was creating errors and delay.
++ Using the Debug code proved very helpful in understanding the project requirements. 
++ I was successful in grasping the rods and placing them in the bucket most of the times. 
+
+Future improvements:
+
++ Although I pulled some of the calculations out of the main loop. I would like to store the values as a pickle file and improve the IK calculation speed.
 
 
-And just for fun, another example image:
-![alt text][image3]
+Here is a picture of one of the successful runs:
+![alt text][image2]
 
 
+Thank you to the Slack community for all the help and the updated version of the project with the debug code. Could not have completed this project without all the support.
