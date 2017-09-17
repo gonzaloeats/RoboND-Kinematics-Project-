@@ -107,15 +107,19 @@ def handle_calculate_IK(req):
 
     #Calculate joint angles using Geometric IK method
     # More information can be found inthe Iverse Kinematics with Kuka KR210
+    # using the wrist center and arctangent we calculate theta1  
     theta1 =atan2(WC[1],WC[0]) 
 
 
 
     # SSS triangle for theta2 and theta3
+    # first we find the lengths of each side:
     side_a = 1.501
     side_b = sqrt(pow((sqrt(WC[0] * WC[0] + WC[1] * WC[1]) - 0.35), 2) + pow((WC[2] - 0.75),2))
     side_c = 1.25
 
+    # Using the law of cosin we are able to calculate the three angles of our triangle
+    # made of of joint 2, joint 3, and the wrist center
     angle_a = acos((side_b * side_b + side_c * side_c - side_a * side_a) / (2 * side_b * side_c))
     angle_b = acos((side_a * side_a + side_c * side_c - side_b * side_b) / (2 * side_a * side_c))
     angle_c = acos((side_a * side_a + side_b * side_b - side_c * side_c) / (2 * side_a * side_b))

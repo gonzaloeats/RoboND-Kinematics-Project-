@@ -101,14 +101,18 @@ Given the position we are able to feed those values back into our transformation
     WC = EE - (0.303) * ROT_EE[:,2]
 ```
 
-Using the WC we can calculate the first three thetas:
+Using the WC we can calculate the first theta just by using arctangent:
 ```python
  #Calculate joint angles using Geometric IK method
     # More information can be found inthe Iverse Kinematics with Kuka KR210
     theta1 =atan2(WC[1],WC[0]) 
 
 
+```
+![alt text][image3]
 
+Here we visualize joint two and three as along with the wrist center as a triangle. Using the law of cosine and the offset of link for to find theta2 and theta3.
+```python
     # SSS triangle for theta2 and theta3
     side_a = 1.501
     side_b = sqrt(pow((sqrt(WC[0] * WC[0] + WC[1] * WC[1]) - 0.35), 2) + pow((WC[2] - 0.75),2))
